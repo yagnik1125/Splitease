@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "136201669514",
+    "project_id": "auhackathon-38707",
+    "storage_bucket": "auhackathon-38707.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136201669514:android:cdb4ab941a0212b5111673",
+        "android_client_info": {
+          "package_name": "com.example.auhackathon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6_eFbrT3gxR9Kvc-T7Ft2HUrYmRUOe1g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
