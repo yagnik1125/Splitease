@@ -3,7 +3,6 @@ import 'package:auhackathon/models/usermodel.dart';
 class GroupModel {
   final String groupname;
   final String groupid;
-  final String profileImageUrl;
   final List<UserModel> members;
   // final bool active;
   // final int lastSeen;
@@ -15,7 +14,6 @@ class GroupModel {
   GroupModel({
     required this.groupname,
     required this.groupid,
-    required this.profileImageUrl,
     required this.members,
     // required this.active,
     // required this.lastSeen,
@@ -29,7 +27,6 @@ class GroupModel {
     return {
       'groupname': groupname,
       'groupid': groupid,
-      'profileImageUrl': profileImageUrl,
       'members': members,
       // 'active': active,
       // 'lastSeen': lastSeen,
@@ -44,7 +41,6 @@ class GroupModel {
     return GroupModel(
       groupname: map['groupname'] ?? '',
       groupid: map['groupid'] ?? '',
-      profileImageUrl: map['profileImageUrl'] ?? '',
       members: List<UserModel>.from(map['members']),
       // active: map['active'] ?? false,
       // lastSeen: map['lastSeen'] ?? 0,
