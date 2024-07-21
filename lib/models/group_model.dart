@@ -27,7 +27,7 @@ class GroupModel {
     return {
       'groupname': groupname,
       'groupid': groupid,
-      'members': members,
+      'members': members.map((member) => member.toMap()).toList(),
       // 'active': active,
       // 'lastSeen': lastSeen,
       // 'phoneNumber': phoneNumber,
@@ -41,7 +41,8 @@ class GroupModel {
     return GroupModel(
       groupname: map['groupname'] ?? '',
       groupid: map['groupid'] ?? '',
-      members: List<UserModel>.from(map['members']),
+      members: List<UserModel>.from(
+          map['members']?.map((x) => UserModel.fromMap(x)) ?? []),
       // active: map['active'] ?? false,
       // lastSeen: map['lastSeen'] ?? 0,
       // phoneNumber: map['phoneNumber'] ?? '',

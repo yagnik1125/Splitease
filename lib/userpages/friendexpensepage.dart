@@ -124,7 +124,7 @@ class _FriendExpensePageState extends State<FriendExpensePage> {
                         : netExpenses < 0
                             ? Center(
                                 child: Text(
-                                  "You will give ${-1 * netExpenses}₹",
+                                  "You will pay ${-1 * netExpenses}₹",
                                   style: const TextStyle(
                                     fontSize: 20,
                                     color: Colors.red,
@@ -225,7 +225,7 @@ class _FriendExpensePageState extends State<FriendExpensePage> {
           ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: CustomElevatedButton(
         onPressed: () {
           Navigator.push(

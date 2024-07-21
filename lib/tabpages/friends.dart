@@ -57,13 +57,13 @@ class _FriendsPageState extends State<FriendsPage> {
       // ),
       body: Stack(
         children: [
-          const Image(
-            height: double.maxFinite,
-            width: double.maxFinite,
-            image: AssetImage('assets/images/bgimg3.jpg'),
-            fit: BoxFit.cover,
-            // color: Colors.black,//background color most probably
-          ),
+          // const Image(
+          //   height: double.maxFinite,
+          //   width: double.maxFinite,
+          //   image: AssetImage('assets/images/bgimg3.jpg'),
+          //   fit: BoxFit.cover,
+          //   // color: Colors.black,//background color most probably
+          // ),
           Column(
             children: [
               const SizedBox(
