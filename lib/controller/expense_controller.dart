@@ -49,7 +49,7 @@ class ExpenseController {
     required double amount,
     required String about,
     required String providerUid,
-    required String recieverUid,
+    required List<String> recieverUid,
     required String expenseId,
     // required String username,
     // required String email,

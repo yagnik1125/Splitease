@@ -5,7 +5,7 @@ class GroupExpenseModel {
   final double amount;
   final String about;
   final int date;
-  final String receiverUid; // new field for the receiver's UID
+  final List<String> receiverUid; // new field for the receiver's UID
 
   GroupExpenseModel({
     required this.expenseId,
@@ -25,7 +25,8 @@ class GroupExpenseModel {
       'amount': amount,
       'about': about,
       'date': date,
-      'receiverUid': receiverUid,
+      'receiverUid': receiverUid.map((member) => member).toList(),
+      // 'receiverUid': receiverUid,
     };
   }
 
@@ -37,7 +38,7 @@ class GroupExpenseModel {
       amount: map['amount'] ?? 0.0,
       about: map['about'] ?? '',
       date: map['date'] ?? 0,
-      receiverUid: map['receiverUid'] ?? '',
+      receiverUid: List<String>.from(map['receiverUid']),
     );
   }
 }

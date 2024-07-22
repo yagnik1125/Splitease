@@ -3,6 +3,7 @@ import 'package:auhackathon/add_functionss/addfriendtogroup.dart';
 import 'package:auhackathon/models/group_expense_model.dart';
 import 'package:auhackathon/models/group_model.dart';
 import 'package:auhackathon/services/firestore_services.dart';
+import 'package:auhackathon/userpages/settledebtpage.dart';
 import 'package:auhackathon/widgets/color_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
   final FirestoreService firestoreService = FirestoreService();
   final curuserid = FirebaseAuth.instance.currentUser!.uid;
   late double netExpenses;
+  Map<String, double> netAmountMap = {};
 
   @override
   void initState() {
@@ -37,8 +39,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
       group!.groupid,
     ));
 
-    Map<String, double> netAmountMap = {};
-    double len = group!.members.length.toDouble();
+    // double len = group!.members.length.toDouble();
 
     // double userTotal = 0;
     // double friendTotal = 0;
@@ -53,16 +54,17 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
       //   friendTotal += double.parse(expense.amount.toString());
       // }
       double amount = double.parse(expense.amount.toString());
-      if (expense.receiverUid == "Split") {
+      double len = expense.receiverUid.length.toDouble();
+      if (len >= 2) {
         netAmountMap.update(
           expense.provideruid,
           (value) => value - len * amount,
           ifAbsent: () => -len * amount,
         );
 
-        for (var member in group!.members) {
+        for (var memberId in expense.receiverUid) {
           netAmountMap.update(
-            member.uid,
+            memberId,
             (value) => value + amount,
             ifAbsent: () => amount,
           );
@@ -74,7 +76,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
           ifAbsent: () => -amount,
         );
         netAmountMap.update(
-          expense.receiverUid,
+          expense.receiverUid[0],
           (value) => value + amount,
           ifAbsent: () => amount,
         );
@@ -164,6 +166,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
               ],
             ),
           ),
+          // ------------------------------------------------------------------
           Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 5.0, horizontal: 30.0),
@@ -172,37 +175,58 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
               child: Container(
                 color: const Color.fromARGB(255, 246, 213, 173),
                 padding: const EdgeInsets.all(8),
-                child: netExpenses == 0
-                    ? const Center(
-                        child: Text(
-                          "Net Expense 0₹",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      )
-                    : netExpenses > 0
-                        ? Center(
-                            child: Text(
-                              "You will pay $netExpenses₹",
-                              style: const TextStyle(
-                                fontSize: 20,
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: netExpenses == 0
+                          ? const Center(
+                              child: Text(
+                                "Net Expense 0₹",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          )
-                        : Center(
-                            child: Text(
-                              "You will recieve ${-1 * netExpenses}₹",
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
+                            )
+                          : netExpenses > 0
+                              ? Center(
+                                  child: Text(
+                                    "You will pay $netExpenses₹",
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    "You will recieve ${-1 * netExpenses}₹",
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_forward_ios,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                SettleDebtPage(netAmountMap: netAmountMap,group: widget.group,),
                           ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -226,9 +250,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
                     itemBuilder: (context, index) {
                       final expense = snapshot.data![index];
                       final providerName = getUserNameById(expense.provideruid);
-                      final receiverName = expense.receiverUid != "Split"
-                          ? getUserNameById(expense.receiverUid)
-                          : "All";
+                      final receivers = expense.receiverUid;
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                             vertical: 5.0, horizontal: 10.0),
@@ -242,7 +264,11 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
                             // leading: expense.provideruid == curuserid
                             //     ? const Icon(Icons.subdirectory_arrow_left)
                             //     : const Icon(Icons.subdirectory_arrow_right),
-                            title: Text(expense.about),
+                            title: Text(
+                              expense.about,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -266,7 +292,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
                                       width: 15,
                                     ),
                                     Text(
-                                      'Receiver: $receiverName',
+                                      'Type: ${receivers.length > 1 ? "Split" : "Personal"}',
                                       style: const TextStyle(
                                           fontStyle: FontStyle.italic),
                                     ),
@@ -292,7 +318,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
                             //           fontStyle: FontStyle.italic),
                             //     ),
                             //     Text(
-                            //       'Receiver: $receiverName',
+                            //       'Type: ${receivers.length > 1 ? "Split" : "Personal"}',
                             //       style: const TextStyle(
                             //           fontStyle: FontStyle.italic),
                             //     ),

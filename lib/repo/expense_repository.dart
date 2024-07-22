@@ -79,6 +79,7 @@ class ExponseRepository {
             provideruid: providerUid,
           ).toMap());
       Navigator.pop(context);
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Expense Added')),
       );
@@ -93,7 +94,7 @@ class ExponseRepository {
     required double amount,
     required String about,
     required String providerUid,
-    required String recieverUid,
+    required List<String> recieverUid,
     required String expenseId,
     // required String username,
     // required String email,
@@ -137,6 +138,7 @@ class ExponseRepository {
       //       recieveruid: recieverUid,
       //       provideruid: providerUid,
       //     ).toMap());
+      Navigator.pop(context);
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Expense Added')),

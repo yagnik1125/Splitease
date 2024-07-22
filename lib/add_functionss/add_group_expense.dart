@@ -26,7 +26,8 @@ class _GroupExpenseInputState extends ConsumerState<GroupExpenseInput> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   DateTime? selectedDate;
-  UserModel? selectedMember; // Selected member to pay to
+  List<UserModel> selectedMembers =
+      []; // List to keep track of selected members
 
   @override
   void initState() {
@@ -50,7 +51,15 @@ class _GroupExpenseInputState extends ConsumerState<GroupExpenseInput> {
     }
   }
 
-  void addExpense() {
+  Future<UserModel> getCurrentUserModel() async {
+    // You should replace this with the actual logic to fetch the current user's UserModel
+    // This is just a placeholder implementation
+    String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
+    UserModel currentUserModel = widget.groupMembers.firstWhere((member) => member.uid == currentUserUid);
+    return currentUserModel;
+  }
+
+  Future<void> addExpense({bool split = false}) async {
     // print("_amountController.text-------->${_amountController.text}");
     // print("_descriptionController.text-------->${_descriptionController.text}");
     // print("selectedDate-------->$selectedDate");
@@ -68,21 +77,28 @@ class _GroupExpenseInputState extends ConsumerState<GroupExpenseInput> {
     } else if (selectedDate == null) {
       showAlertDialog(context: context, message: "Select the date");
       return;
+    } else if (selectedMembers.isEmpty) {
+      showAlertDialog(
+          context: context, message: "Select at least one member to pay to");
+      return;
     }
-    // else if (selectedMember == null) {
-    //   showAlertDialog(context: context, message: "Select the member to pay to");
-    //   return;
-    // }
 
     double amount = double.parse(_amountController.text);
     String description = _descriptionController.text;
     String providerUid = FirebaseAuth.instance.currentUser!.uid;
-    String recieverUid = selectedMember != null ? selectedMember!.uid : "Split";
+    if (split) {
+      UserModel currentUser = await getCurrentUserModel();
+      if (!selectedMembers.contains(currentUser)) {
+        selectedMembers.add(currentUser);
+      }
+    }
 
-    // If the expense is split equally
-    if (recieverUid == "Split") {
-      amount = amount / (widget.groupMembers.length);
-      // recieverUid = ""; // No specific receiver for split expense
+    List<String> receiverUids =
+        selectedMembers.map((member) => member.uid).toList();
+    double len = double.parse(selectedMembers.length.toString());
+
+    if (split) {
+      amount = amount / len;
     }
 
     ref.read(expenseControllerProvider).addGroupExpenseToFirebase(
@@ -91,7 +107,7 @@ class _GroupExpenseInputState extends ConsumerState<GroupExpenseInput> {
           amount: amount,
           about: description,
           providerUid: providerUid,
-          recieverUid: recieverUid,
+          recieverUid: receiverUids,
           date: selectedDate!,
           context: context,
           mounted: mounted,
@@ -139,25 +155,40 @@ class _GroupExpenseInputState extends ConsumerState<GroupExpenseInput> {
               ),
             ),
             const SizedBox(height: 16.0),
-            DropdownButton<UserModel>(
-              hint: const Text('Select member to pay to'),
-              value: selectedMember,
-              onChanged: (UserModel? value) {
-                setState(() {
-                  selectedMember = value;
-                });
-              },
-              items: widget.groupMembers
-                  .map((UserModel member) => DropdownMenuItem<UserModel>(
-                        value: member,
-                        child: Text(member.username),
-                      ))
-                  .toList(),
+            Expanded(
+              child: ListView.builder(
+                itemCount: widget.groupMembers.length,
+                itemBuilder: (context, index) {
+                  final member = widget.groupMembers[index];
+                  return CheckboxListTile(
+                    title: Text(member.username),
+                    value: selectedMembers.contains(member),
+                    onChanged: (bool? value) {
+                      setState(() {
+                        if (value == true) {
+                          selectedMembers.add(member);
+                        } else {
+                          selectedMembers.remove(member);
+                        }
+                      });
+                    },
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: addExpense,
-              child: const Text('Add Expense'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => addExpense(split: true),
+                  child: const Text('Split Expense'),
+                ),
+                ElevatedButton(
+                  onPressed: addExpense,
+                  child: const Text('Add Expense'),
+                ),
+              ],
             ),
           ],
         ),

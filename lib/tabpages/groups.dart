@@ -36,7 +36,7 @@ class _GroupsPageState extends State<GroupsPage> {
     // return userTotal - friendTotal;
 
     Map<String, double> netAmountMap = {};
-    double len = group.members.length.toDouble();
+    // double len = group!.members.length.toDouble();
 
     // double userTotal = 0;
     // double friendTotal = 0;
@@ -51,16 +51,17 @@ class _GroupsPageState extends State<GroupsPage> {
       //   friendTotal += double.parse(expense.amount.toString());
       // }
       double amount = double.parse(expense.amount.toString());
-      if (expense.receiverUid == "Split") {
+      double len = expense.receiverUid.length.toDouble();
+      if (len >= 2) {
         netAmountMap.update(
           expense.provideruid,
           (value) => value - len * amount,
           ifAbsent: () => -len * amount,
         );
 
-        for (var member in group.members) {
+        for (var memberId in expense.receiverUid) {
           netAmountMap.update(
-            member.uid,
+            memberId,
             (value) => value + amount,
             ifAbsent: () => amount,
           );
@@ -72,7 +73,7 @@ class _GroupsPageState extends State<GroupsPage> {
           ifAbsent: () => -amount,
         );
         netAmountMap.update(
-          expense.receiverUid,
+          expense.receiverUid[0],
           (value) => value + amount,
           ifAbsent: () => amount,
         );
