@@ -33,6 +33,7 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
   }
 
   void calculateNetExpenses() async {
+    netAmountMap = {};
     List<GroupExpenseModel> expenses =
         (await firestoreService.getGroupExpensesForCalc(
       // FirebaseAuth.instance.currentUser!.uid.toString(),
@@ -101,6 +102,40 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
   String getUserNameById(String uid) {
     final user = widget.group.members.firstWhere((member) => member.uid == uid);
     return user.username;
+  }
+
+  Future<void> _deleteGroupExpense(GroupExpenseModel expense) async {
+    await firestoreService.deleteGroupExpense(
+        expense.groupid, expense.expenseId);
+    reloadBody();
+  }
+
+  void _showDeleteConfirmationDialog(
+      BuildContext context, GroupExpenseModel expense) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Expense'),
+          content: const Text('Are you sure you want to delete this expense?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                _deleteGroupExpense(expense);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -219,8 +254,10 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                SettleDebtPage(netAmountMap: netAmountMap,group: widget.group,),
+                            builder: (context) => SettleDebtPage(
+                              netAmountMap: netAmountMap,
+                              group: widget.group,
+                            ),
                           ),
                         );
                       },
@@ -325,6 +362,9 @@ class _GroupExpensePageState extends State<GroupExpensePage> {
                             //   ],
                             // ),
                             trailing: Text(expense.amount.toString()),
+                            onLongPress: () {
+                              _showDeleteConfirmationDialog(context, expense);
+                            },
                             onTap: () {
                               // Navigator.push(
                               //     context,

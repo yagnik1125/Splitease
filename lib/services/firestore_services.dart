@@ -77,6 +77,30 @@ class FirestoreService {
     });
   }
 
+  Future<void> deleteExpense(String userId, String friendId, String expenseId) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('friends')
+          .doc(friendId)
+          .collection('expenses')
+          .doc(expenseId)
+          .delete();
+
+      await _firestore
+          .collection('users')
+          .doc(friendId)
+          .collection('friends')
+          .doc(userId)
+          .collection('expenses')
+          .doc(expenseId)
+          .delete();
+    } catch (e) {
+      print('Error deleting expense: $e');
+    }
+  }
+
   Future<List<ExpenseModel>> getExpensesCalc(
       String currentUserUid, String friendUid) async {
     try {
@@ -223,6 +247,21 @@ class FirestoreService {
     } catch (e) {
       print('Error retrieving expense: $e');
       return null;
+    }
+  }
+
+  Future<void> deleteGroupExpense(String groupId, String expenseId) async {
+    try {
+      await _firestore
+          .collection('groups')
+          .doc(groupId)
+          // .collection('friends')
+          // .doc(friendId)
+          .collection('expenses')
+          .doc(expenseId)
+          .delete();
+    } catch (e) {
+      print('Error deleting expense: $e');
     }
   }
 }

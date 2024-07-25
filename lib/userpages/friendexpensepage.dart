@@ -64,6 +64,40 @@ class _FriendExpensePageState extends State<FriendExpensePage> {
     calculateNetExpenses();
   }
 
+  Future<void> _deleteExpense(ExpenseModel expense) async {
+    await firestoreService.deleteExpense(
+        curuserid, friend!.uid, expense.expenseId);
+    reloadBody();
+  }
+
+  void _showDeleteConfirmationDialog(
+      BuildContext context, ExpenseModel expense) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Expense'),
+          content: const Text('Are you sure you want to delete this expense?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                _deleteExpense(expense);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -205,6 +239,10 @@ class _FriendExpensePageState extends State<FriendExpensePage> {
                                       fontWeight: FontWeight.bold),
                                 ),
                                 trailing: Text(expense.amount.toString()),
+                                onLongPress: () {
+                                  _showDeleteConfirmationDialog(
+                                      context, expense);
+                                },
                                 onTap: () {
                                   // Navigator.push(
                                   //     context,
